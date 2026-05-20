@@ -1,0 +1,6 @@
+{
+  "name": "Guia de Conjugação em Francês",
+  "description": "Um guia interativo de conjugação de verbos em francês com explicações gramaticais, exemplos práticos e avaliação com IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

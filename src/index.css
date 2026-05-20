@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom neo-brutalist bento custom shadows and styling utility rules */
+.neo-shadow {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+.neo-shadow-sm {
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+.neo-shadow-lg {
+  box-shadow: 8px 8px 0px 0px #000000;
+}
