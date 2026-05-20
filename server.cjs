@@ -31,23 +31,19 @@ import_dotenv.default.config();
 var app = (0, import_express.default)();
 var PORT = 3e3;
 app.use(import_express.default.json());
-var aiClient = null;
-function getAI() {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_API_KEY is required and not configured in Secrets.");
-    }
-    aiClient = new import_genai.GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build"
-        }
-      }
-    });
+function getAI(reqApiKey) {
+  const key = reqApiKey || process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("GEMINI_API_KEY is required and not configured in Secrets.");
   }
-  return aiClient;
+  return new import_genai.GoogleGenAI({
+    apiKey: key,
+    httpOptions: {
+      headers: {
+        "User-Agent": "aistudio-build"
+      }
+    }
+  });
 }
 app.get("/api/health", (req, res) => {
   res.json({
@@ -58,17 +54,18 @@ app.get("/api/health", (req, res) => {
 app.post("/api/gemini/conjugate", async (req, res) => {
   try {
     const { verb } = req.body;
+    const reqApiKey = req.headers["x-gemini-api-key"];
     if (!verb || typeof verb !== "string") {
       return res.status(400).json({ error: "\xC9 necess\xE1rio fornecer o verbo em franc\xEAs (ex: 'devoir')." });
     }
     const cleanVerb = verb.trim().toLowerCase();
-    if (!process.env.GEMINI_API_KEY) {
+    if (!reqApiKey && !process.env.GEMINI_API_KEY) {
       return res.status(400).json({
         error: "Chave de API do Gemini n\xE3o configurada.",
-        instructions: "Por favor, adicione a sua GEMINI_API_KEY no painel de Configura\xE7\xF5es > Secrets da plataforma para usar a busca por IA."
+        instructions: "Por favor, adicione a sua GEMINI_API_KEY na UI ou no painel de Configura\xE7\xF5es."
       });
     }
-    const ai = getAI();
+    const ai = getAI(reqApiKey);
     const systemInstruction = `Voc\xEA \xE9 um professor e linguista especialista em l\xEDngua francesa.
 O seu objetivo \xE9 conjugar o verbo franc\xEAs solicitado pelo usu\xE1rio e empacotar a resposta em formato JSON estrito.
 A tradu\xE7\xE3o e as explica\xE7\xF5es gramaticais devem estar escritas em Portugu\xEAs de Portugal ou do Brasil.
@@ -258,16 +255,17 @@ Preencha exatamente a estrutura JSON especificada e forne\xE7a tradu\xE7\xF5es c
 app.post("/api/gemini/evaluate", async (req, res) => {
   try {
     const { verb, tense, pronoun, form, userSentence } = req.body;
+    const reqApiKey = req.headers["x-gemini-api-key"];
     if (!verb || !tense || !pronoun || !form || !userSentence) {
       return res.status(400).json({ error: "Par\xE2metros em falta. Certifique-se de que escolheu um verbo, conjuga\xE7\xE3o e escreveu a frase." });
     }
-    if (!process.env.GEMINI_API_KEY) {
+    if (!reqApiKey && !process.env.GEMINI_API_KEY) {
       return res.status(400).json({
         error: "Chave de API do Gemini n\xE3o configurada.",
-        instructions: "Por favor, adicione a sua GEMINI_API_KEY nas Configura\xE7\xF5es do AI Studio para usar a avalia\xE7\xE3o interativa."
+        instructions: "Por favor, adicione a sua GEMINI_API_KEY na UI ou no painel de Configura\xE7\xF5es para usar a avalia\xE7\xE3o interativa."
       });
     }
-    const ai = getAI();
+    const ai = getAI(reqApiKey);
     const systemInstruction = `Voc\xEA \xE9 um professor nativo de franc\xEAs que avalia tarefas de escrita de alunos falantes de portugu\xEAs.
 O aluno escolheu o verbo "${verb}", no tempo "${tense}", para o pronome/formato correspondente a "${pronoun}" (que se conjuga como "${form}").
 E escreveu a seguinte frase em franc\xEAs: "${userSentence}".
